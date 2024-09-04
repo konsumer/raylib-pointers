@@ -119,5 +119,9 @@
       "cstring"
     ],
     "returns": "void"
+  },
+  "Fade_wrapped2": {
+    "args": ["ptr", "ptr", "f32"],
+    "returns": "void"
   }
 }

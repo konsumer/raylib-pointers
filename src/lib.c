@@ -23,3 +23,11 @@ void  wrapped_DrawText(const char *text, int posX, int posY, int fontSize, Color
 void wrapped_LoadTexture(Texture2D* ret, const char *fileName) {
   *ret = LoadTexture(fileName);
 }
+
+// TODO
+Color* Fade_wrapped1(Color* color, float alpha) {}
+
+
+void Fade_wrapped2(Color* ret, Color* color, float alpha) {
+  *ret = Fade(*color, alpha);
+}

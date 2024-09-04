@@ -52,6 +52,10 @@ class Color {
   set a (v) {
     symbols.Color_set_a(this._addr, v)
   }
+
+  free () {
+    symbols.wrapped_free(this._addr)
+  }
 }
 
 export const LIGHTGRAY = new Color({ r: 200, g: 200, b: 200, a: 255 }) // Light Gray
@@ -81,6 +85,10 @@ export const BLANK = new Color({ r: 0, g: 0, b: 0, a: 0 }) // Blank (Transparent
 export const MAGENTA = new Color({ r: 255, g: 0, b: 255, a: 255 }) // Magenta
 export const RAYWHITE = new Color({ r: 245, g: 245, b: 245, a: 255 }) // My own White (raylib logo)
 
+// these allow hosty to manage mem
+export const alloc = symbols.wrapped_alloc
+export const free = symbols.wrapped_free
+
 // these don't need any wrapping
 export const { WindowShouldClose, CloseWindow, BeginDrawing, EndDrawing, SetTargetFPS, DrawFPS } = symbols
 
@@ -90,3 +98,10 @@ export const ClearBackground = color => symbols.wrapped_ClearBackground(color._a
 export const DrawText = (text, posX, posY, fontSize, color) => symbols.wrapped_DrawText(cstr(text), posX, posY, fontSize, color._addr)
 
 export const InitWindow = (width, height, title) => symbols.InitWindow(width, height, cstr(title))
+
+// this is example with ret-first
+export const Fade2 = (color, alpha) => {
+  const ret = new Color()
+  symbols.Fade_wrapped2(ret._addr, color._addr, alpha)
+  return ret
+}

@@ -10,11 +10,17 @@ import {
   DrawText,
   SetTargetFPS,
   RAYWHITE,
-  LIGHTGRAY
+  LIGHTGRAY,
+  BLACK,
+  Fade2
 } from './raylib'
 
 InitWindow(800, 450, 'raylib [core] example - basic window')
 SetTargetFPS(60)
+
+const f2 = Fade2(BLACK, 0.5)
+console.log(`Fade BLACK to 0.5: { ${f2.r}, ${f2.g}, ${f2.b}, ${f2.a} }`)
+f2.free()
 
 while (!WindowShouldClose()) {
   BeginDrawing()

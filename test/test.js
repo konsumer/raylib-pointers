@@ -18,15 +18,14 @@ import {
 InitWindow(800, 450, 'raylib [core] example - basic window')
 SetTargetFPS(60)
 
-const f2 = Fade2(BLACK, 0.5)
-console.log(`Fade BLACK to 0.5: { ${f2.r}, ${f2.g}, ${f2.b}, ${f2.a} }`)
-f2.free()
-
 while (!WindowShouldClose()) {
   BeginDrawing()
   ClearBackground(RAYWHITE)
   DrawText('Congrats! You created your first window!', 190, 200, 20, LIGHTGRAY)
   EndDrawing()
+  // this tests the allocation (and auto-free) being made on every single frame
+  const f2 = Fade2(BLACK, 0.5)
+  console.log(`Fade BLACK to 0.5: { ${f2.r}, ${f2.g}, ${f2.b}, ${f2.a} }`)
 }
 
 CloseWindow()

@@ -11,11 +11,35 @@ const { symbols } = dlopen(`build/librlptr.${suffix}`, ffi)
 // convert a string into a pointer to a buffer
 const cstr = s => ptr(Buffer.from((s || '\0')))
 
+// these allow host to manage mem
+// it also sets up WindowShouldClose to clear anyting created in that frame
+const frameAllocated = []
+let running = false
+
+export const alloc = size => {
+  const p = symbols.wrapped_alloc(size)
+  if (running) {
+    frameAllocated.push(p)
+  }
+  return p
+}
+
+export const free = symbols.wrapped_free
+
+export const WindowShouldClose = () => {
+  running = true
+  let p
+  while (p = frameAllocated.pop()) {
+    free(p)
+  }
+  return symbols.WindowShouldClose()
+}
+
 // this makes a struct-pointer act more like a plain js object
 class Color {
   constructor (init = { r: 0, g: 0, b: 0, a: 0 }, address) {
     // this could also be done with hard-coded sizes (to avoid Color_size)
-    this._addr = address || symbols.wrapped_alloc(symbols.Color_size())
+    this._addr = address || alloc(symbols.Color_size())
     for (const k of Object.keys(init)) {
       this[k] = init[k]
     }
@@ -54,7 +78,7 @@ class Color {
   }
 
   free () {
-    symbols.wrapped_free(this._addr)
+    free(this._addr)
   }
 }
 
@@ -85,12 +109,8 @@ export const BLANK = new Color({ r: 0, g: 0, b: 0, a: 0 }) // Blank (Transparent
 export const MAGENTA = new Color({ r: 255, g: 0, b: 255, a: 255 }) // Magenta
 export const RAYWHITE = new Color({ r: 245, g: 245, b: 245, a: 255 }) // My own White (raylib logo)
 
-// these allow hosty to manage mem
-export const alloc = symbols.wrapped_alloc
-export const free = symbols.wrapped_free
-
 // these don't need any wrapping
-export const { WindowShouldClose, CloseWindow, BeginDrawing, EndDrawing, SetTargetFPS, DrawFPS } = symbols
+export const { CloseWindow, BeginDrawing, EndDrawing, SetTargetFPS, DrawFPS } = symbols
 
 // these need a little adjustment
 export const ClearBackground = color => symbols.wrapped_ClearBackground(color._addr)

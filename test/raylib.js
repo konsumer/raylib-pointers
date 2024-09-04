@@ -102,6 +102,6 @@ export const InitWindow = (width, height, title) => symbols.InitWindow(width, he
 // this is example with ret-first
 export const Fade2 = (color, alpha) => {
   const ret = new Color()
-  symbols.Fade_wrapped2(ret._addr, color._addr, alpha)
+  symbols.wrapped_Fade2(ret._addr, color._addr, alpha)
   return ret
 }

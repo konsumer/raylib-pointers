@@ -16,7 +16,7 @@ void wrapped_ClearBackground(Color* color) {
   ClearBackground(*color);
 }
 
-void  wrapped_DrawText(const char *text, int posX, int posY, int fontSize, Color* color) {
+void wrapped_DrawText(const char *text, int posX, int posY, int fontSize, Color* color) {
   DrawText(text, posX, posY, fontSize, *color);
 }
 
@@ -25,9 +25,9 @@ void wrapped_LoadTexture(Texture2D* ret, const char *fileName) {
 }
 
 // TODO
-Color* Fade_wrapped1(Color* color, float alpha) {}
+Color* wrapped_Fade1(Color* color, float alpha) {}
 
 
-void Fade_wrapped2(Color* ret, Color* color, float alpha) {
+void wrapped_Fade2(Color* ret, Color* color, float alpha) {
   *ret = Fade(*color, alpha);
 }

@@ -120,7 +120,7 @@
     ],
     "returns": "void"
   },
-  "Fade_wrapped2": {
+  "wrapped_Fade2": {
     "args": ["ptr", "ptr", "f32"],
     "returns": "void"
   }

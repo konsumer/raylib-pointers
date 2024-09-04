@@ -1,7 +1,7 @@
 // this will generate raylib-pointers
 
 import { writeFile } from 'fs/promises'
-import { getAPI } from './shared.js'
+import { getAPI, blocklist } from './shared.js'
 
 const { defines, structs, aliases, enums, callbacks, functions } = await getAPI()
 
@@ -65,18 +65,6 @@ bool wrapped_WindowShouldClose() {
   return WindowShouldClose();
 }
 `]
-
-// TODO: probly should figure out problem with these
-const blocklist = [
-  'DrawLineBezier',
-  'DrawSplineBezierCubic',
-  'DrawLineCatmullRom',
-  'DrawSplineCatmullRom',
-  'DrawSplineBezierCubic',
-  'DrawLineBezierQuad',
-  'DrawLineBezierCubic',
-  'DrawLineBSpline'
-]
 
 for (let { name, description, returnType, params=[] } of functions) {
   if (blocklist.includes(name)) {

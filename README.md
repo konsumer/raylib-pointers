@@ -3,7 +3,7 @@ Essentially, the purpose of this is to use only pointers for raylib structs, for
 This explores a new direction for some ideas in [raylib-pointers](https://github.com/konsumer/raylib-pointers) and [raybun](https://github.com/konsumer/raybun).
 
 ```
-# build poointer-only raylib
+# build pointer-only raylib
 cmake -G Ninja -B build
 cmake --build build
 

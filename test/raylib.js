@@ -12,7 +12,7 @@ const { symbols } = dlopen(`build/librlptr.${suffix}`, ffi)
 const cstr = s => ptr(Buffer.from((s || '\0')))
 
 // these allow host to manage mem
-// it also sets up WindowShouldClose to clear anyting created in that frame
+// it also sets up WindowShouldClose to free anyting created in that frame
 const frameAllocated = []
 let running = false
 
@@ -36,7 +36,7 @@ export const WindowShouldClose = () => {
 }
 
 // this makes a struct-pointer act more like a plain js object
-class Color {
+export class Color {
   constructor (init = { r: 0, g: 0, b: 0, a: 0 }, address) {
     // this could also be done with hard-coded sizes (to avoid Color_size)
     this._addr = address || alloc(symbols.Color_size())

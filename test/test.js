@@ -12,20 +12,27 @@ import {
   RAYWHITE,
   LIGHTGRAY,
   BLACK,
-  Fade2
+  Fade2,
+  Color
 } from './raylib'
 
-InitWindow(800, 450, 'raylib [core] example - basic window')
+InitWindow(800, 450, 'bun - raylib-pointer')
 SetTargetFPS(60)
 
+// this tests simple (Color) struct in/out
+const f2 = Fade2(BLACK, 0.5)
+console.log(`Fade BLACK to 0.5: { ${f2.r}, ${f2.g}, ${f2.b}, ${f2.a} }`)
+
+let i = 0
+
 while (!WindowShouldClose()) {
+  // this tests the auto-free on every frame
+  const c = new Color({ r: i++ % 255, g: ((127 - i) % 255) || 0, b: ((i - 127) % 255) || 0, a: 255 })
+
   BeginDrawing()
-  ClearBackground(RAYWHITE)
+  ClearBackground(c)
   DrawText('Congrats! You created your first window!', 190, 200, 20, LIGHTGRAY)
   EndDrawing()
-  // this tests the allocation (and auto-free) being made on every single frame
-  const f2 = Fade2(BLACK, 0.5)
-  console.log(`Fade BLACK to 0.5: { ${f2.r}, ${f2.g}, ${f2.b}, ${f2.a} }`)
 }
 
 CloseWindow()

@@ -4,36 +4,146 @@ import { dlopen, FFIType, suffix, ptr } from 'bun:ffi'
 
 // this is sort of from https://raw.githubusercontent.com/konsumer/raybun/main/raylib/ffi.json
 // and provides basic "export as-is" stuff, I also override some with _wrapped for pointer-based counterparts
-import ffi from './ffi.json'
+const ffi = {
+  "BeginDrawing": {
+    "args": [],
+    "returns": "void"
+  },
+  "CloseWindow": {
+    "args": [],
+    "returns": "void"
+  },
+  "Color_get_a": {
+    "args": [
+      "ptr"
+    ],
+    "returns": "u8"
+  },
+  "Color_get_b": {
+    "args": [
+      "ptr"
+    ],
+    "returns": "u8"
+  },
+  "Color_get_g": {
+    "args": [
+      "ptr"
+    ],
+    "returns": "u8"
+  },
+  "Color_get_r": {
+    "args": [
+      "ptr"
+    ],
+    "returns": "u8"
+  },
+  "Color_set_a": {
+    "args": [
+      "ptr",
+      "u8"
+    ],
+    "returns": "void"
+  },
+  "Color_set_b": {
+    "args": [
+      "ptr",
+      "u8"
+    ],
+    "returns": "void"
+  },
+  "Color_set_g": {
+    "args": [
+      "ptr",
+      "u8"
+    ],
+    "returns": "void"
+  },
+  "Color_set_r": {
+    "args": [
+      "ptr",
+      "u8"
+    ],
+    "returns": "void"
+  },
+  "Color_size": {
+    "args": [],
+    "returns": "u32"
+  },
+  "DrawFPS": {
+    "args": [
+      "i32",
+      "i32"
+    ],
+    "returns": "void"
+  },
+  "EndDrawing": {
+    "args": [],
+    "returns": "void"
+  },
+  "InitWindow": {
+    "args": [
+      "i32",
+      "i32",
+      "cstring"
+    ],
+    "returns": "void"
+  },
+  "SetTargetFPS": {
+    "args": [
+      "i32"
+    ],
+    "returns": "void"
+  },
+  "wrapped_ClearBackground": {
+    "args": [
+      "ptr"
+    ],
+    "returns": "void"
+  },
+  "wrapped_DrawText": {
+    "args": [
+      "cstring",
+      "i32",
+      "i32",
+      "i32",
+      "ptr"
+    ],
+    "returns": "void"
+  },
+  "wrapped_Fade": {
+    "args": [
+      "ptr",
+      "f32"
+    ],
+    "returns": "ptr"
+  },
+  "wrapped_WindowShouldClose": {
+    "args": [],
+    "returns": "bool"
+  },
+  "wrapped_alloc": {
+    "args": [
+      "u32"
+    ],
+    "returns": "ptr"
+  },
+  "wrapped_free": {
+    "args": [
+      "ptr"
+    ],
+    "returns": "void"
+  }
+}
 
 const { symbols } = dlopen(`build/librlptr.${suffix}`, ffi)
 
 // convert a string into a pointer to a buffer
 const cstr = s => ptr(Buffer.from((s || '\0')))
 
-// these allow host to manage mem
-// it also sets up WindowShouldClose to free anyting created in that frame
-const frameAllocated = []
-let running = false
-
-export const alloc = size => {
-  const p = symbols.wrapped_alloc(size)
-  if (running) {
-    frameAllocated.push(p)
-  }
-  return p
-}
-
+// this lets us auto-free on every frame
+export const alloc = symbols.wrapped_alloc
 export const free = symbols.wrapped_free
-
-export const WindowShouldClose = () => {
-  running = true
-  let p
-  while (p = frameAllocated.pop()) {
-    free(p)
-  }
-  return symbols.WindowShouldClose()
-}
+export const WindowShouldClose = symbols.wrapped_WindowShouldClose
 
 // this makes a struct-pointer act more like a plain js object
 export class Color {
@@ -76,10 +186,6 @@ export class Color {
   set a (v) {
     symbols.Color_set_a(this._addr, v)
   }
-
-  free () {
-    free(this._addr)
-  }
 }
 
 export const LIGHTGRAY = new Color({ r: 200, g: 200, b: 200, a: 255 }) // Light Gray
@@ -119,9 +225,6 @@ export const DrawText = (text, posX, posY, fontSize, color) => symbols.wrapped_D
 
 export const InitWindow = (width, height, title) => symbols.InitWindow(width, height, cstr(title))
 
-// this is example with ret-first
-export const Fade2 = (color, alpha) => {
-  const ret = new Color()
-  symbols.wrapped_Fade2(ret._addr, color._addr, alpha)
-  return ret
-}
+// this is example with pointer param/return
+export const Fade = (color, alpha) => new Color({}, symbols.wrapped_Fade(color._addr, alpha))
+

@@ -8,5 +8,5 @@ cmake -G Ninja -B build
 cmake --build build
 
 # test it in bunjs
-bun ./test/test.js
+bun test.js
 ```

@@ -1,4 +1,4 @@
-// run with bun ./test/test.js
+// run with bun test.js
 
 import {
   ClearBackground,
@@ -12,21 +12,21 @@ import {
   RAYWHITE,
   LIGHTGRAY,
   BLACK,
-  Fade2,
+  Fade,
   Color
 } from './raylib'
 
 InitWindow(800, 450, 'bun - raylib-pointer')
 SetTargetFPS(60)
 
-// this tests simple (Color) struct in/out
-const f2 = Fade2(BLACK, 0.5)
-console.log(`Fade BLACK to 0.5: { ${f2.r}, ${f2.g}, ${f2.b}, ${f2.a} }`)
+// these test simple (Color) struct in/out
+const f1 = Fade(BLACK, 0.5)
+console.log(`Fade BLACK to 0.5: { ${f1.r}, ${f1.g}, ${f1.b}, ${f1.a} }`)
 
 let i = 0
 
 while (!WindowShouldClose()) {
-  // this tests the auto-free on every frame
+  // this tests the auto-free on every frame, since lots of new colors are allocated here
   const c = new Color({ r: i++ % 255, g: ((127 - i) % 255) || 0, b: ((i - 127) % 255) || 0, a: 255 })
 
   BeginDrawing()

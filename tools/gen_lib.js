@@ -1,12 +1,13 @@
 // this will generate raylib-pointers
 
 import { writeFile } from 'fs/promises'
-import { getAPI, blocklist } from './shared.js'
+import api from './api.json'
 
-const { defines, structs, aliases, enums, callbacks, functions } = await getAPI()
+const { structs, wrapped } = api
 
 let out = []
 
+// build utils for structs
 for (const { name, description, fields } of structs) {
   out.push(`// ${description}
 
@@ -16,7 +17,8 @@ unsigned int ${name}_size() {
   for (const field of fields) {
     if (field.type.includes('[')) {
       // TODO: add utils for arrays
-    } else if (/^[A-Z]/.test(field.type)) { // cheap way to detect raylib types
+    } else if (/^[A-Z]/.test(field.type)) {
+      // cheap way to detect raylib types
       // TODO: add utils for nested structs
     } else {
       out.push(`${field.type} ${name}_get_${field.name}(${name}* p) {\n  return p->${field.name};\n}`)
@@ -28,8 +30,8 @@ unsigned int ${name}_size() {
 
 await writeFile('src/structs.h', out.join('\n'))
 
-out = [`
-#include <stdlib.h>
+out = [
+  `#include <stdlib.h>
 #include "raylib.h"
 
 // utils for operating on structs
@@ -64,30 +66,38 @@ bool wrapped_WindowShouldClose() {
   _frame_alloc_counter = 0;
   return WindowShouldClose();
 }
-`]
+`
+]
 
-for (const { name, description, returnType, params = [] } of functions) {
+// these will not be ghenerated for
+const blocklist = [
+  // I will be implementing my own mem-management stuff
+  'wrapped_WindowShouldClose',
+  'wrapped_free',
+  'wrapped_alloc'
+]
+
+for (const { name, description, returnType, params, original } of wrapped) {
   if (blocklist.includes(name)) {
     continue
   }
-
   // does return need to be converted to a pointer?
-  const returnPointer = /[A-Z]/.test(returnType)
+  const returnPointer = /^[A-Z]/.test(returnType)
 
   // do any params need to be converted to pointers?
   let paramPointer = false
 
-  const inputParams = params.map(p => {
-    if (/[A-Z]/.test(p.type)) {
+  const inputParams = params.map((p) => {
+    if (/^[A-Z]/.test(p.type)) {
       paramPointer = true
-      return `${p.type.trim()}* ${p.name}`
+      return `${p.type.trim()} ${p.name}`
     } else {
       return `${p.type} ${p.name}`
     }
   })
 
-  const callParams = params.map(p => {
-    if (/[A-Z]/.test(p.type)) {
+  const callParams = params.map((p) => {
+    if (/^[A-Z]/.test(p.type)) {
       paramPointer = true
       return `*${p.name}`
     } else {
@@ -95,23 +105,21 @@ for (const { name, description, returnType, params = [] } of functions) {
     }
   })
 
-  if (paramPointer || returnPointer) {
-    out.push(`// ${description}`)
-    if (returnPointer) {
-      out.push(`${returnType}* wrapped_${name}(${inputParams.join(', ')}) {`)
-      out.push(`  ${returnType}* _ret = wrapped_alloc(sizeof(${returnType}));`)
-      out.push(`  *_ret = ${name}(${callParams.join(', ')});`)
-      out.push('  return _ret;')
+  out.push(`// ${description}`)
+  if (returnPointer) {
+    out.push(`${returnType} ${name}(${inputParams.join(', ')}) {`)
+    out.push(`  ${returnType} _ret = wrapped_alloc(sizeof(${returnType.replace('*', '')}));`)
+    out.push(`  *_ret = ${original}(${callParams.join(', ')});`)
+    out.push('  return _ret;')
+  } else {
+    out.push(`${returnType} ${name}(${inputParams.join(', ')}) {`)
+    if (returnType === 'void') {
+      out.push(`  ${original}(${callParams.join(', ')});`)
     } else {
-      out.push(`${returnType} wrapped_${name}(${inputParams.join(', ')}) {`)
-      if (returnType === 'void') {
-        out.push(`  ${name}(${callParams.join(', ')});`)
-      } else {
-        out.push(`  return ${name}(${callParams.join(', ')});`)
-      }
+      out.push(`  return ${original}(${callParams.join(', ')});`)
     }
-    out.push('}\n')
   }
+  out.push('}\n')
 }
 
 await writeFile('src/lib.c', out.join('\n'))

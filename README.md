@@ -3,17 +3,6 @@ Essentially, the purpose of this is to use only pointers for raylib structs, for
 This explores a new direction for some ideas in [raybun](https://github.com/konsumer/raybun) and [raylib-pointers-ideas](https://github.com/konsumer/raylib-pointers-ideas).
 
 ```
-# build pointer-only raylib
-cmake -G Ninja -B build
-cmake --build build
-
-# test it in bunjs
-bun test.js
-```
-
-I also wrapped these in scripts:
-
-```
 # build native raylib-pointers (in build/librlptr.[dylib|so|dll])
 bun run build
 
@@ -31,6 +20,19 @@ bun run gen:bun
 
 # run test.js
 bun run test
+```
+
+Each one calls it's dependencies, so you can just do `bun run build`, for example, which will call `bun run gen:raylib`, then `bun run gen:lib`.
+
+You can also build without the scripts, if you need to customize things:
+
+```
+# build pointer-only raylib
+cmake -G Ninja -B build
+cmake --build build
+
+# test it in bunjs
+bun test.js
 ```
 
 ### API info

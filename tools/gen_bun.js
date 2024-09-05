@@ -1,11 +1,15 @@
 // this will generate the bun FFI wrapper
 
 import { writeFile } from 'fs/promises'
-import { getAPI, blocklist } from './shared.js'
+import api from './api.json'
 
-const { defines, structs, aliases, enums, callbacks, functions } = await getAPI()
+const { defines, structs, aliases, enums, callbacks, unwrapped, wrapped, struct_utils } = api
 
+// map the arg/return type to bun ffi syntax
 const mapType = t => {
+  if (t === 'void' || !t) {
+    return 'void'
+  }
   if (t === 'bool') {
     return 'bool'
   }
@@ -15,7 +19,7 @@ const mapType = t => {
   if (t === 'unsigned char') {
     return 'u8'
   }
-  if (t === 'void *') {
+  if (t.includes('*')) {
     return 'ptr'
   }
   if (t === 'int') {
@@ -24,140 +28,107 @@ const mapType = t => {
   if (t === 'unsigned int') {
     return 'u32'
   }
-  if (t.includes('[') || t.includes('*') || /[A-Z]/.test(t)) {
+  if (t.includes('[') || t.includes('*') || /^[A-Z]/.test(t)) {
     return 'ptr'
   }
+  if (t === 'char') {
+    return 'char'
+  }
+  if (t === 'double') {
+    return 'double'
+  }
+  if (t === 'long') {
+    return 'i32'
+  }
+
+  console.log('unhandled type', t)
+
   return ''
 }
 
+// convert api-info format to bun FFI-object
+function processFunctionFFI (f) {
+  const returns = mapType(f.returnType)
+  const out = {
+    args: f.params.map(p => mapType(p.type))
+  }
+  if (returns !== 'void') {
+    out.returns = returns
+  }
+  return out
+}
 
-let out = [`
-// this uses bun FFI and provides an ergonomic interface for js
+const rlVersion = defines.find(d => d.name === 'RAYLIB_VERSION').value
+
+const out = [`// this uses bun FFI and provides an ergonomic interface for js
+// Generated at ${new Date().toISOString()} for raylib ${rlVersion}
 
 import { dlopen, FFIType, suffix, ptr } from 'bun:ffi'
 
 `]
 
-// TODO: Generate these
-const structInfo = {
-  "wrapped_alloc": {
-    "args": [
-      "u32"
-    ],
-    "returns": "ptr"
-  },
-  "wrapped_free": {
-    "args": [
-      "ptr"
-    ],
-    "returns": "void"
-  },
+const ffiInfo = {}
 
-  "DrawFPS": {
-    "args": [
-      "i32",
-      "i32"
-    ],
-    "returns": "void"
-  },
-  "EndDrawing": {
-    "args": [],
-    "returns": "void"
-  },
-  "InitWindow": {
-    "args": [
-      "i32",
-      "i32",
-      "cstring"
-    ],
-    "returns": "void"
-  },
-  "SetTargetFPS": {
-    "args": [
-      "i32"
-    ],
-    "returns": "void"
-  },
-  "wrapped_Fade": {
-    "args": [
-      "ptr",
-      "f32"
-    ],
-    "returns": "ptr"
-  },
-  "wrapped_WindowShouldClose": {
-    "args": [],
-    "returns": "bool"
-  },
-  "BeginDrawing": {
-    "args": [],
-    "returns": "void"
-  },
-  "CloseWindow": {
-    "args": [],
-    "returns": "void"
-  },
-  "wrapped_ClearBackground": {
-    "args": [
-      "ptr"
-    ],
-    "returns": "void"
-  },
-  "wrapped_DrawText": {
-    "args": [
-      "cstring",
-      "i32",
-      "i32",
-      "i32",
-      "ptr"
-    ],
-    "returns": "void"
-  },
-}
-const structWrappers = []
+const blocklist = [
+  // variadic-params is not supported
+  'TraceLog',
+  'TextFormat'
+]
 
-for (const {name, description, fields} of structs) {
-  structInfo[`${name}_size`] = {
-    "args": [],
-    "returns": "u32"
+// TODO: these structs have nested structs, which I have not worked out yet, C-side
+const blocklistStructs = [
+  'RenderTexture',
+  'NPatchInfo',
+  'GlyphInfo',
+  'Font',
+  'Camera3D',
+  'Camera2D',
+  'MaterialMap',
+  'Material',
+  'Transform',
+  'BoneInfo',
+  'Model',
+  'ModelAnimation',
+  'Ray',
+  'RayCollision',
+  'BoundingBox',
+  'AudioStream',
+  'Sound',
+  'Music',
+  'VrDeviceInfo',
+  'VrStereoConfig',
+  'AutomationEvent',
+  'AutomationEventList'
+]
+
+for (const f of unwrapped) {
+  if (blocklist.includes(f.name)) {
+    continue
   }
-
-  structWrappers.push(`export class ${name} {
-  constructor (init = {}, address) {
-    this._addr = address || alloc(symbols.${name}_size())
-    for (const k of Object.keys(init)) {
-      this[k] = init[k]
-    }
-  }
-`)
-
-
-  for (const field of fields) {
-    const ret = mapType(field.type)
-    if (ret === 'ptr') {
-      // TODO: nested structs are not worked out yet
-      continue
-    }
-    structInfo[`${name}_get_${field.name}`] = {
-      "args": ["ptr"],
-      "returns":ret
-    }
-    structInfo[`${name}_set_${field.name}`] = {
-      "args": ["ptr", ret],
-      "returns": 'void'
-    }
-    structWrappers.push(`  get ${field.name}() {
-    return symbols.${name}_get_${field.name}(this._addr)
-  }`)
-    structWrappers.push(`  set ${field.name}(v) {
-    return symbols.${name}_set_${field.name}(this._addr, v)
-  }`)
-  }
-
-  structWrappers.push('}')
+  ffiInfo[f.name] = processFunctionFFI(f)
 }
 
-out.push(`const ffi = ${JSON.stringify(structInfo, null, 2)}`)
+for (const f of wrapped) {
+  if (blocklist.includes(f.name)) {
+    continue
+  }
+  ffiInfo[f.name] = processFunctionFFI(f)
+}
+
+for (const f of struct_utils) {
+  ffiInfo[f.name] = processFunctionFFI(f)
+}
+
+// remove any struct-utils for problem-structs
+for (const n of Object.keys(ffiInfo)) {
+  for (const t of blocklistStructs) {
+    if (n === `${t}_size` || n.startsWith(`${t}_get`) || n.startsWith(`${t}_set`)) {
+      delete ffiInfo[n]
+    }
+  }
+}
+
+out.push(`const ffi = ${JSON.stringify(ffiInfo, null, 2)}`)
 
 out.push(`
 const { symbols } = dlopen(\`build/librlptr.\${suffix}\`, ffi)
@@ -165,23 +136,14 @@ const { symbols } = dlopen(\`build/librlptr.\${suffix}\`, ffi)
 // convert a string into a pointer to a buffer
 const cstr = s => ptr(Buffer.from((s || '\0')))
 
-// this lets us auto-free on every frame
+`)
+
+// TODO: this is temporary until I get codegen for functions
+out.push(`
 export const alloc = symbols.wrapped_alloc
 export const free = symbols.wrapped_free
 export const WindowShouldClose = symbols.wrapped_WindowShouldClose
-`)
 
-out.push(...structWrappers)
-
-const colors = defines.filter(d => d.type === 'COLOR').map(c => {
-  const m = [...c.value.matchAll(/\{ ([0-9]+), ([0-9]+), ([0-9]+), ([0-9]+) \}/g)]
-  return `export const ${c.name} = new Color({r: ${m[0][1]}, g: ${m[0][2]}, b: ${m[0][3]}, a: ${m[0][4]}}) // ${c.description}`
-})
-
-out.push(...colors)
-
-// TODO: handle all the function-exports. this is just hardcodded for demo
-out.push(`
 // these don't need any wrapping
 export const { CloseWindow, BeginDrawing, EndDrawing, SetTargetFPS, DrawFPS } = symbols
 
@@ -196,5 +158,42 @@ export const InitWindow = (width, height, title) => symbols.InitWindow(width, he
 export const Fade = (color, alpha) => new Color({}, symbols.wrapped_Fade(color._addr, alpha))
 `)
 
+const structWrappers = []
+for (const { name, description, fields } of structs) {
+  structWrappers.push(`export class ${name} {
+  constructor (init = {}, address) {
+    this._addr = address || alloc(symbols.${name}_size())
+    for (const k of Object.keys(init)) {
+      this[k] = init[k]
+    }
+  }
+`)
 
-await writeFile('raylib.js', out.join('\n'))
+  for (const field of fields) {
+    const ret = mapType(field.type)
+    if (ret === 'ptr') {
+      // TODO: nested structs are not worked out yet
+      continue
+    }
+    structWrappers.push(`  get ${field.name}() {
+    return symbols.${name}_get_${field.name}(this._addr)
+  }`)
+    structWrappers.push(`  set ${field.name}(v) {
+    return symbols.${name}_set_${field.name}(this._addr, v)
+  }`)
+  }
+  structWrappers.push('}')
+}
+out.push(...structWrappers)
+
+const colors = defines.filter(d => d.type === 'COLOR').map(c => {
+  const m = [...c.value.matchAll(/\{ ([0-9]+), ([0-9]+), ([0-9]+), ([0-9]+) \}/g)]
+  return `export const ${c.name} = new Color({r: ${m[0][1]}, g: ${m[0][2]}, b: ${m[0][3]}, a: ${m[0][4]}}) // ${c.description}`
+})
+out.push(...colors)
+
+// TODO: handle non-macro, non-color defines
+
+// TODO: add wrapped/unwrapped exports
+
+await writeFile('raylib_bun.js', out.join('\n'))

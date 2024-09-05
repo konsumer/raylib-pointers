@@ -711,6 +711,18 @@ void Wave_set_data(Wave* p, void * v) {
 unsigned int AudioStream_size() {
   return sizeof(AudioStream);
 }
+rAudioBuffer * AudioStream_get_buffer(AudioStream* p) {
+  return p->buffer;
+}
+void AudioStream_set_buffer(AudioStream* p, rAudioBuffer * v) {
+  p->buffer = v;
+}
+rAudioProcessor * AudioStream_get_processor(AudioStream* p) {
+  return p->processor;
+}
+void AudioStream_set_processor(AudioStream* p, rAudioProcessor * v) {
+  p->processor = v;
+}
 unsigned int AudioStream_get_sampleRate(AudioStream* p) {
   return p->sampleRate;
 }
@@ -854,4 +866,40 @@ char ** FilePathList_get_paths(FilePathList* p) {
 }
 void FilePathList_set_paths(FilePathList* p, char ** v) {
   p->paths = v;
+}
+
+// Automation event
+
+unsigned int AutomationEvent_size() {
+  return sizeof(AutomationEvent);
+}
+unsigned int AutomationEvent_get_frame(AutomationEvent* p) {
+  return p->frame;
+}
+void AutomationEvent_set_frame(AutomationEvent* p, unsigned int v) {
+  p->frame = v;
+}
+unsigned int AutomationEvent_get_type(AutomationEvent* p) {
+  return p->type;
+}
+void AutomationEvent_set_type(AutomationEvent* p, unsigned int v) {
+  p->type = v;
+}
+
+// Automation event list
+
+unsigned int AutomationEventList_size() {
+  return sizeof(AutomationEventList);
+}
+unsigned int AutomationEventList_get_capacity(AutomationEventList* p) {
+  return p->capacity;
+}
+void AutomationEventList_set_capacity(AutomationEventList* p, unsigned int v) {
+  p->capacity = v;
+}
+unsigned int AutomationEventList_get_count(AutomationEventList* p) {
+  return p->count;
+}
+void AutomationEventList_set_count(AutomationEventList* p, unsigned int v) {
+  p->count = v;
 }

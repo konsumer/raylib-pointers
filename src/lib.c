@@ -267,6 +267,33 @@ void wrapped_UnloadDroppedFiles(FilePathList* files) {
   UnloadDroppedFiles(*files);
 }
 
+// Load automation events list from file, NULL for empty list, capacity = MAX_AUTOMATION_EVENTS
+AutomationEventList* wrapped_LoadAutomationEventList(const char * fileName) {
+  AutomationEventList* _ret = wrapped_alloc(sizeof(AutomationEventList));
+  *_ret = LoadAutomationEventList(fileName);
+  return _ret;
+}
+
+// Unload automation events list from file
+void wrapped_UnloadAutomationEventList(AutomationEventList ** list) {
+  UnloadAutomationEventList(*list);
+}
+
+// Export automation events list as text file
+bool wrapped_ExportAutomationEventList(AutomationEventList* list, const char * fileName) {
+  return ExportAutomationEventList(*list, fileName);
+}
+
+// Set automation event list to record to
+void wrapped_SetAutomationEventList(AutomationEventList ** list) {
+  SetAutomationEventList(*list);
+}
+
+// Play a recorded automation event
+void wrapped_PlayAutomationEvent(AutomationEvent* event) {
+  PlayAutomationEvent(*event);
+}
+
 // Get mouse position XY
 Vector2* wrapped_GetMousePosition() {
   Vector2* _ret = wrapped_alloc(sizeof(Vector2));
@@ -339,17 +366,17 @@ void wrapped_DrawLine(int startPosX, int startPosY, int endPosX, int endPosY, Co
   DrawLine(startPosX, startPosY, endPosX, endPosY, *color);
 }
 
-// Draw a line (Vector version)
+// Draw a line (using gl lines)
 void wrapped_DrawLineV(Vector2* startPos, Vector2* endPos, Color* color) {
   DrawLineV(*startPos, *endPos, *color);
 }
 
-// Draw a line defining thickness
+// Draw a line (using triangles/quads)
 void wrapped_DrawLineEx(Vector2* startPos, Vector2* endPos, float thick, Color* color) {
   DrawLineEx(*startPos, *endPos, thick, *color);
 }
 
-// Draw lines sequence
+// Draw lines sequence (using gl lines)
 void wrapped_DrawLineStrip(Vector2 ** points, int pointCount, Color* color) {
   DrawLineStrip(*points, pointCount, *color);
 }
@@ -382,6 +409,11 @@ void wrapped_DrawCircleV(Vector2* center, float radius, Color* color) {
 // Draw circle outline
 void wrapped_DrawCircleLines(int centerX, int centerY, float radius, Color* color) {
   DrawCircleLines(centerX, centerY, radius, *color);
+}
+
+// Draw circle outline (Vector version)
+void wrapped_DrawCircleLinesV(Vector2* center, float radius, Color* color) {
+  DrawCircleLinesV(*center, radius, *color);
 }
 
 // Draw ellipse
@@ -492,6 +524,81 @@ void wrapped_DrawPolyLines(Vector2* center, int sides, float radius, float rotat
 // Draw a polygon outline of n sides with extended parameters
 void wrapped_DrawPolyLinesEx(Vector2* center, int sides, float radius, float rotation, float lineThick, Color* color) {
   DrawPolyLinesEx(*center, sides, radius, rotation, lineThick, *color);
+}
+
+// Draw spline: Linear, minimum 2 points
+void wrapped_DrawSplineLinear(Vector2 ** points, int pointCount, float thick, Color* color) {
+  DrawSplineLinear(*points, pointCount, thick, *color);
+}
+
+// Draw spline: B-Spline, minimum 4 points
+void wrapped_DrawSplineBasis(Vector2 ** points, int pointCount, float thick, Color* color) {
+  DrawSplineBasis(*points, pointCount, thick, *color);
+}
+
+// Draw spline: Quadratic Bezier, minimum 3 points (1 control point): [p1, c2, p3, c4...]
+void wrapped_DrawSplineBezierQuadratic(Vector2 ** points, int pointCount, float thick, Color* color) {
+  DrawSplineBezierQuadratic(*points, pointCount, thick, *color);
+}
+
+// Draw spline segment: Linear, 2 points
+void wrapped_DrawSplineSegmentLinear(Vector2* p1, Vector2* p2, float thick, Color* color) {
+  DrawSplineSegmentLinear(*p1, *p2, thick, *color);
+}
+
+// Draw spline segment: B-Spline, 4 points
+void wrapped_DrawSplineSegmentBasis(Vector2* p1, Vector2* p2, Vector2* p3, Vector2* p4, float thick, Color* color) {
+  DrawSplineSegmentBasis(*p1, *p2, *p3, *p4, thick, *color);
+}
+
+// Draw spline segment: Catmull-Rom, 4 points
+void wrapped_DrawSplineSegmentCatmullRom(Vector2* p1, Vector2* p2, Vector2* p3, Vector2* p4, float thick, Color* color) {
+  DrawSplineSegmentCatmullRom(*p1, *p2, *p3, *p4, thick, *color);
+}
+
+// Draw spline segment: Quadratic Bezier, 2 points, 1 control point
+void wrapped_DrawSplineSegmentBezierQuadratic(Vector2* p1, Vector2* c2, Vector2* p3, float thick, Color* color) {
+  DrawSplineSegmentBezierQuadratic(*p1, *c2, *p3, thick, *color);
+}
+
+// Draw spline segment: Cubic Bezier, 2 points, 2 control points
+void wrapped_DrawSplineSegmentBezierCubic(Vector2* p1, Vector2* c2, Vector2* c3, Vector2* p4, float thick, Color* color) {
+  DrawSplineSegmentBezierCubic(*p1, *c2, *c3, *p4, thick, *color);
+}
+
+// Get (evaluate) spline point: Linear
+Vector2* wrapped_GetSplinePointLinear(Vector2* startPos, Vector2* endPos, float t) {
+  Vector2* _ret = wrapped_alloc(sizeof(Vector2));
+  *_ret = GetSplinePointLinear(*startPos, *endPos, t);
+  return _ret;
+}
+
+// Get (evaluate) spline point: B-Spline
+Vector2* wrapped_GetSplinePointBasis(Vector2* p1, Vector2* p2, Vector2* p3, Vector2* p4, float t) {
+  Vector2* _ret = wrapped_alloc(sizeof(Vector2));
+  *_ret = GetSplinePointBasis(*p1, *p2, *p3, *p4, t);
+  return _ret;
+}
+
+// Get (evaluate) spline point: Catmull-Rom
+Vector2* wrapped_GetSplinePointCatmullRom(Vector2* p1, Vector2* p2, Vector2* p3, Vector2* p4, float t) {
+  Vector2* _ret = wrapped_alloc(sizeof(Vector2));
+  *_ret = GetSplinePointCatmullRom(*p1, *p2, *p3, *p4, t);
+  return _ret;
+}
+
+// Get (evaluate) spline point: Quadratic Bezier
+Vector2* wrapped_GetSplinePointBezierQuad(Vector2* p1, Vector2* c2, Vector2* p3, float t) {
+  Vector2* _ret = wrapped_alloc(sizeof(Vector2));
+  *_ret = GetSplinePointBezierQuad(*p1, *c2, *p3, t);
+  return _ret;
+}
+
+// Get (evaluate) spline point: Cubic Bezier
+Vector2* wrapped_GetSplinePointBezierCubic(Vector2* p1, Vector2* c2, Vector2* c3, Vector2* p4, float t) {
+  Vector2* _ret = wrapped_alloc(sizeof(Vector2));
+  *_ret = GetSplinePointBezierCubic(*p1, *c2, *c3, *p4, t);
+  return _ret;
 }
 
 // Check collision between two rectangles

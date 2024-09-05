@@ -3,8 +3,10 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "gen:bun": "bun tools/gen_bun.js",
-    "gen:lib": "bun tools/gen_lib.js",
+    "gen:bun": "bun run gen:api && bun tools/gen_bun.js",
+    "gen:lib": "bun run gen:api && bun tools/gen_lib.js",
+    "gen:api": "bun run gen:raylib && bun tools/gen_api.js",
+    "gen:raylib": "cd build/_deps/raylib-src/parser && make && ./raylib_parser -f JSON -o output/raylib_api.json",
     "build": "cmake -G Ninja -B build && cmake --build build",
     "test": "bun test.js"
   }

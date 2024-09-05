@@ -7,7 +7,7 @@ const { defines, structs, aliases, enums, callbacks, functions } = await getAPI(
 
 let out = []
 
-for (const {name, description, fields} of structs) {
+for (const { name, description, fields } of structs) {
   out.push(`// ${description}
 
 unsigned int ${name}_size() {
@@ -16,7 +16,7 @@ unsigned int ${name}_size() {
   for (const field of fields) {
     if (field.type.includes('[')) {
       // TODO: add utils for arrays
-    } else if (/[A-Z]/.test(field.type)) { // cheap way to detect raylib stuff
+    } else if (/^[A-Z]/.test(field.type)) { // cheap way to detect raylib types
       // TODO: add utils for nested structs
     } else {
       out.push(`${field.type} ${name}_get_${field.name}(${name}* p) {\n  return p->${field.name};\n}`)
@@ -66,7 +66,7 @@ bool wrapped_WindowShouldClose() {
 }
 `]
 
-for (let { name, description, returnType, params=[] } of functions) {
+for (const { name, description, returnType, params = [] } of functions) {
   if (blocklist.includes(name)) {
     continue
   }
@@ -82,7 +82,7 @@ for (let { name, description, returnType, params=[] } of functions) {
       paramPointer = true
       return `${p.type.trim()}* ${p.name}`
     } else {
-       return `${p.type} ${p.name}`
+      return `${p.type} ${p.name}`
     }
   })
 
@@ -91,7 +91,7 @@ for (let { name, description, returnType, params=[] } of functions) {
       paramPointer = true
       return `*${p.name}`
     } else {
-       return p.name
+      return p.name
     }
   })
 
@@ -104,9 +104,9 @@ for (let { name, description, returnType, params=[] } of functions) {
       out.push('  return _ret;')
     } else {
       out.push(`${returnType} wrapped_${name}(${inputParams.join(', ')}) {`)
-      if (returnType === 'void'){
+      if (returnType === 'void') {
         out.push(`  ${name}(${callParams.join(', ')});`)
-      }else{
+      } else {
         out.push(`  return ${name}(${callParams.join(', ')});`)
       }
     }

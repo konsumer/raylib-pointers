@@ -1,8 +1,8 @@
-import { access, readFile, writeFile } from 'fs/promises';
+import { access, readFile, writeFile } from 'fs/promises'
 
 export const fileExists = f => access(f).then(() => true).catch(() => false)
 
-export async function getAPI(){
+export async function getAPI () {
   return JSON.parse(await readFile('build/_deps/raylib-src/parser/output/raylib_api.json'))
 }
 
@@ -17,3 +17,19 @@ export const blocklist = [
   'DrawLineBezierCubic',
   'DrawLineBSpline'
 ]
+
+// check if the function will be wrapped
+export const isWrapped = f => {
+  const returnPointer = /[A-Z]/.test(f.returnType)
+
+  // do any params need to be converted to pointers?
+  let paramPointer = false
+
+  for (const p of (f.params || [])) {
+    if (/[A-Z]/.test(p.type)) {
+      paramPointer = true
+      break
+    }
+  }
+  return returnPointer || paramPointer
+}

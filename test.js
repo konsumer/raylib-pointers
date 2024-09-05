@@ -14,7 +14,7 @@ import {
   BLACK,
   Fade,
   Color
-} from './raylib'
+} from './raylib_bun'
 
 InitWindow(800, 450, 'bun - raylib-pointer')
 SetTargetFPS(60)

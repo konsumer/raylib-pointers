@@ -1,5 +1,5 @@
 // this uses bun FFI and provides an ergonomic interface for js
-// Generated at 2024-09-05T01:15:16.387Z for raylib 5.0
+// Generated at 2024-09-05T21:57:41.707Z for raylib 5.0
 
 import { dlopen, FFIType, suffix, ptr } from 'bun:ffi'
 

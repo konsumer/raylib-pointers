@@ -11,6 +11,28 @@ cmake --build build
 bun test.js
 ```
 
+I also wrapped these in scripts:
+
+```
+# build native raylib-pointers (in build/librlptr.[dylib|so|dll])
+bun run build
+
+# generate the raylib API JSON (requires build first)
+bun run gen:raylib
+
+# generate tools/api.json (requires raylib JSON)
+bun run gen:api
+
+# generate src/lib.c from tools/api.json
+bun run gen:lib
+
+# generate raylib_bun.js from tools/api.json
+bun run gen:bun
+
+# run test.js
+bun run test
+```
+
 ### API info
 
 I also include [api.json](./tools/api.json), which is the same as [raylib's parser output](https://github.com/raysan5/raylib/blob/master/parser/output/raylib_api.json), but includes my additions, and seperates things into categories. You can use this in your own codegen to wrap this lib easier.
@@ -27,4 +49,4 @@ aliases
 enums
 callbacks
 functions # you should probly use wrapped/unwrapped above, since it's the same info (but categorized, with updated types)
-``` 
+```

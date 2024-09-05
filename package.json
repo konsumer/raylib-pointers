@@ -1,7 +1,7 @@
 {
   "name": "raylib-pointers",
   "private": true,
-  "version": "0.0.4",
+  "version": "0.0.5",
   "scripts": {
     "gen:bun": "bun run gen:api && bun tools/gen_bun.js",
     "gen:lib": "bun run gen:api && bun tools/gen_lib.js",

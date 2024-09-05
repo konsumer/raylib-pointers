@@ -31,16 +31,16 @@ jobs:
         include:
           - os: ubuntu-latest
             zip_name: raylib-pointers_linux_x86_64
-            generator: Unix Makefiles
           - os: macos-latest
             zip_name: raylib-pointers_mac
-            generator: Xcode
           - os: windows-latest
             zip_name: raylib-pointers_windows_x86_64
-            generator: Visual Studio 16 2019
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+
+      - name: Setup Ninja
+        uses: seanmiddleditch/gha-setup-ninja@v5
 
       - name: Install Linux dependencies
         if: matrix.os == 'ubuntu-latest'
@@ -48,27 +48,18 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install gcc-multilib
           sudo apt-get install -y --no-install-recommends libglfw3 libglfw3-dev libx11-dev libxcursor-dev libxrandr-dev libxinerama-dev libxi-dev libxext-dev libxfixes-dev libwayland-dev libxkbcommon-dev
-      - name: Install macOS dependencies
-        if: matrix.os == 'macOS-latest'
-        run: brew install cmake
 
-      - name: Install Windows dependencies
-        if: matrix.os == 'windows-latest'
-        run: |
-          choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System'
-
-      - name: Build
-        shell: bash
-        run: |
-          cmake -G "${{ matrix.generator }}" -DCMAKE_BUILD_TYPE=Release -B ./build
-          cmake --build ./build --config Release
+      - name: Build Project
+        uses: threeal/cmake-action@v2.0.0
+        with:
+          generator: Ninja
 
       - name: Compress
         shell: bash
         run: |
           cd ./build/
           mkdir ../artifact
-          zip -r ../artifact/${{ matrix.zip_name }}.zip *
+          zip -r ../artifact/${{ matrix.zip_name }}.zip librlptr*
 
       - name: Upload
         uses: actions/upload-release-asset@v1

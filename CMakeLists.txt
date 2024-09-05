@@ -24,3 +24,4 @@ FetchContent_MakeAvailable(raylib)
 
 add_library (${PROJECT_NAME} SHARED src/lib.c)
 target_link_libraries(${PROJECT_NAME} PRIVATE raylib)
+set_property(TARGET ${PROJECT_NAME} PROPERTY POSITION_INDEPENDENT_CODE ON)

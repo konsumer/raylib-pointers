@@ -5,13 +5,13 @@
 import { writeFile, readFile } from 'fs/promises'
 
 // check if the function will be wrapped
-const isWrapped = f => {
+const isWrapped = (f) => {
   const returnPointer = /^[A-Z]/.test(f.returnType)
 
   // do any params need to be converted to pointers?
   let paramPointer = false
 
-  for (const p of (f.params || [])) {
+  for (const p of f.params || []) {
     if (/[A-Z]/.test(p.type)) {
       paramPointer = true
       break
@@ -50,8 +50,7 @@ export const blocklist = [
   'GetSplinePointBezierCubic'
 ]
 
-const blocklistStructs = [
-]
+const blocklistStructs = []
 
 const { defines, structs, aliases, enums, callbacks, functions } = JSON.parse(await readFile('build/_deps/raylib-src/parser/output/raylib_api.json'))
 
@@ -75,9 +74,7 @@ for (const { name, description, fields } of structs) {
       name: `${name}_get_${field.name}`,
       description: `Getter for ${name}->${field.name}`,
       returnType: field.type,
-      params: [
-        { name: 'obj', type: `${field.name}*` }
-      ]
+      params: [{ name: 'obj', type: `${field.name}*` }]
     })
     struct_utils.push({
       name: `${name}_set_${field.name}`,
@@ -101,7 +98,7 @@ for (const f of functions) {
       description: f.description,
       original: f.name,
       returnType: /[A-Z]/.test(f.returnType) ? `${f.returnType}*` : f.returnType,
-      params: (f.params || []).map(p => {
+      params: (f.params || []).map((p) => {
         return {
           ...p,
           type: /[A-Z]/.test(p.type) ? `${p.type}*` : p.type
@@ -121,11 +118,13 @@ wrapped.push({
   original: 'alloc',
   description: 'Allocate memory, cleared on every WindowShouldClose call (your frame update-loop)',
   returnType: 'void*',
-  params: [{
-    name: 'size',
-    type: 'unsigned int',
-    description: 'The size (in bytes) to allocate'
-  }]
+  params: [
+    {
+      name: 'size',
+      type: 'unsigned int',
+      description: 'The size (in bytes) to allocate'
+    }
+  ]
 })
 
 wrapped.push({
@@ -133,11 +132,13 @@ wrapped.push({
   original: 'free',
   description: 'Clear allocated memory. If it was not allocated (or has already been freed) this will error.',
   returnType: 'void',
-  params: [{
-    name: 'pointer',
-    type: 'void*',
-    description: 'The pointer to free'
-  }]
+  params: [
+    {
+      name: 'pointer',
+      type: 'void*',
+      description: 'The pointer to free'
+    }
+  ]
 })
 
 wrapped.push({

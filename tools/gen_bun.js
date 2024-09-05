@@ -6,7 +6,7 @@ import api from './api.json'
 const { defines, structs, aliases, enums, callbacks, unwrapped, wrapped, struct_utils } = api
 
 // map the arg/return type to bun ffi syntax
-const mapType = t => {
+const mapType = (t) => {
   if (t === 'void' || !t) {
     return 'void'
   }
@@ -47,10 +47,10 @@ const mapType = t => {
 }
 
 // convert api-info format to bun FFI-object
-function processFunctionFFI (f) {
+function processFunctionFFI(f) {
   const returns = mapType(f.returnType)
   const out = {
-    args: f.params.map(p => mapType(p.type))
+    args: f.params.map((p) => mapType(p.type))
   }
   if (returns !== 'void') {
     out.returns = returns
@@ -58,14 +58,16 @@ function processFunctionFFI (f) {
   return out
 }
 
-const rlVersion = defines.find(d => d.name === 'RAYLIB_VERSION').value
+const rlVersion = defines.find((d) => d.name === 'RAYLIB_VERSION').value
 
-const out = [`// this uses bun FFI and provides an ergonomic interface for js
+const out = [
+  `// this uses bun FFI and provides an ergonomic interface for js
 // Generated at ${new Date().toISOString()} for raylib ${rlVersion}
 
 import { dlopen, FFIType, suffix, ptr } from 'bun:ffi'
 
-`]
+`
+]
 
 const ffiInfo = {}
 
@@ -76,30 +78,7 @@ const blocklist = [
 ]
 
 // TODO: these structs have nested structs, which I have not worked out yet, C-side
-const blocklistStructs = [
-  'RenderTexture',
-  'NPatchInfo',
-  'GlyphInfo',
-  'Font',
-  'Camera3D',
-  'Camera2D',
-  'MaterialMap',
-  'Material',
-  'Transform',
-  'BoneInfo',
-  'Model',
-  'ModelAnimation',
-  'Ray',
-  'RayCollision',
-  'BoundingBox',
-  'AudioStream',
-  'Sound',
-  'Music',
-  'VrDeviceInfo',
-  'VrStereoConfig',
-  'AutomationEvent',
-  'AutomationEventList'
-]
+const blocklistStructs = ['RenderTexture', 'NPatchInfo', 'GlyphInfo', 'Font', 'Camera3D', 'Camera2D', 'MaterialMap', 'Material', 'Transform', 'BoneInfo', 'Model', 'ModelAnimation', 'Ray', 'RayCollision', 'BoundingBox', 'AudioStream', 'Sound', 'Music', 'VrDeviceInfo', 'VrStereoConfig', 'AutomationEvent', 'AutomationEventList']
 
 for (const f of unwrapped) {
   if (blocklist.includes(f.name)) {
@@ -186,10 +165,12 @@ for (const { name, description, fields } of structs) {
 }
 out.push(...structWrappers)
 
-const colors = defines.filter(d => d.type === 'COLOR').map(c => {
-  const m = [...c.value.matchAll(/\{ ([0-9]+), ([0-9]+), ([0-9]+), ([0-9]+) \}/g)]
-  return `export const ${c.name} = new Color({r: ${m[0][1]}, g: ${m[0][2]}, b: ${m[0][3]}, a: ${m[0][4]}}) // ${c.description}`
-})
+const colors = defines
+  .filter((d) => d.type === 'COLOR')
+  .map((c) => {
+    const m = [...c.value.matchAll(/\{ ([0-9]+), ([0-9]+), ([0-9]+), ([0-9]+) \}/g)]
+    return `export const ${c.name} = new Color({r: ${m[0][1]}, g: ${m[0][2]}, b: ${m[0][3]}, a: ${m[0][4]}}) // ${c.description}`
+  })
 out.push(...colors)
 
 // TODO: handle non-macro, non-color defines

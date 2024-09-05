@@ -8,6 +8,7 @@
     "gen:api": "bun run gen:raylib && bun tools/gen_api.js",
     "gen:raylib": "cd build/_deps/raylib-src/parser && make && ./raylib_parser -f JSON -o output/raylib_api.json",
     "build": "cmake -B build && bun run gen:lib && cmake --build build",
-    "test": "bun test.js"
+    "test": "bun test.js",
+    "lint": "bunx -y prettier --write src/ tools/"
   }
 }

@@ -20,6 +20,9 @@ bun run gen:bun
 
 # run test.js
 bun run test
+
+# clean up code-style
+bun run lint
 ```
 
 Each one calls it's dependencies, so you can just do `bun run build`, for example, which will call `bun run gen:raylib`, then `bun run gen:lib`.
@@ -34,6 +37,8 @@ cmake --build build
 # test it in bunjs
 bun test.js
 ```
+
+I check in the generated files (`tools/api.json`, `src/lib.c`, `src/struct.h`) so you can build any step without needing previous steps.
 
 ### API info
 

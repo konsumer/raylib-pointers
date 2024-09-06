@@ -53,11 +53,19 @@ jobs:
         with:
           generator: Ninja
 
-      - name: Compress
+      - name: Compress (posix)
+        if: matrix.os != 'windows-latest'
         run: |
           cd ./build/
           mkdir ../artifact
           zip -r ../artifact/${{ matrix.zip_name }}.zip librlptr*
+
+      - name: Compress (windows)
+        if: matrix.os != 'windows-latest'
+        run: |
+          cd ./build/
+          mkdir ../artifact
+          Compress-Archive -Path  librlptr* -Destination ../artifact/${{ matrix.zip_name }}.zip
 
       - name: Upload
         uses: actions/upload-release-asset@v1

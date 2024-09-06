@@ -54,7 +54,6 @@ jobs:
           generator: Ninja
 
       - name: Compress
-        shell: bash
         run: |
           cd ./build/
           mkdir ../artifact

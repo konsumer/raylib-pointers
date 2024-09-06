@@ -61,7 +61,7 @@ jobs:
           zip -r ../artifact/${{ matrix.zip_name }}.zip librlptr*
 
       - name: Compress (windows)
-        if: matrix.os != 'windows-latest'
+        if: matrix.os == 'windows-latest'
         run: |
           cd ./build/
           mkdir ../artifact

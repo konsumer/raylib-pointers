@@ -1,5 +1,9 @@
 Essentially, the purpose of this is to use only pointers for raylib structs, for use in FFI that only allows pointers, and not pass-by-value.
 
+To you use, head over to [releases](https://github.com/konsumer/raylib-pointers/releases) and grab the latest for your platform. With this, make your FFI bindings however you want. I am making [experimental bunjs bindings](https://github.com/konsumer/raylib-pointers/blob/main/raylib_bun.js) to test it out.
+
+## development
+
 This explores a new direction for some ideas in [raybun](https://github.com/konsumer/raybun) and [raylib-pointers-ideas](https://github.com/konsumer/raylib-pointers-ideas).
 
 ```

@@ -8,9 +8,9 @@ project(rlptr
 )
 
 include(FetchContent)
+set(FETCHCONTENT_QUIET FALSE)
 
 # raylib
-set(FETCHCONTENT_QUIET FALSE)
 set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE) # don't build the supplied examples
 set(BUILD_GAMES    OFF CACHE BOOL "" FORCE) # don't build the supplied example games
 FetchContent_Declare(
@@ -24,4 +24,4 @@ FetchContent_MakeAvailable(raylib)
 
 add_library (${PROJECT_NAME} SHARED src/lib.c)
 target_link_libraries(${PROJECT_NAME} PUBLIC raylib)
-set_property(TARGET ${PROJECT_NAME} PROPERTY POSITION_INDEPENDENT_CODE ON)
+set_property(TARGET ${PROJECT_NAME} PROPERTY POSITION_INDEPENDENT_CODE OFF)

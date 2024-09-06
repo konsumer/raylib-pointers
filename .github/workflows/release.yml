@@ -57,15 +57,17 @@ jobs:
         if: matrix.os != 'windows-latest'
         run: |
           cd ./build/
+          cp ../tools/api.json .
           mkdir ../artifact
-          zip -r ../artifact/${{ matrix.zip_name }}.zip librlptr*
+          zip -r ../artifact/${{ matrix.zip_name }}.zip librlptr* api.json
 
       - name: Compress (windows)
         if: matrix.os == 'windows-latest'
         run: |
           cd ./build/
           mkdir ../artifact
-          Compress-Archive -Path  librlptr.dll -Destination ../artifact/${{ matrix.zip_name }}.zip
+          cp ../tools/api.json .
+          Compress-Archive -Path  librlptr.dll -Path api.json -Destination ../artifact/${{ matrix.zip_name }}.zip
 
       - name: Upload
         uses: actions/upload-release-asset@v1

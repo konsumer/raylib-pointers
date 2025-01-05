@@ -1,6 +1,6 @@
 // this will generate API info about all the new wrapped stuff & utils
 // it's basically the same as the stuff parser generates in raylib
-// but I add my wrappers and and struct-utils
+// but I add my wrappers and struct-utils
 
 import { writeFile, readFile } from 'fs/promises'
 

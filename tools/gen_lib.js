@@ -69,7 +69,7 @@ bool wrapped_WindowShouldClose() {
 `
 ]
 
-// these will not be ghenerated for
+// these will not be generated for
 const blocklist = [
   // I will be implementing my own mem-management stuff
   'wrapped_WindowShouldClose',
